@@ -1,12 +1,12 @@
-#BrickSmarts training set generator
+# BrickSmarts training set generator
 
 This tool generates Lego part images - multiple viewing angles of every Lego piece in the LDRAW database, in every color.
 
-#Why?
+# Why?
 
 You know. I'm training my AI.
 
-#How?
+# How?
 
 Download it. Build and run the Docker container. It will take a long time to generate all the images.
 
