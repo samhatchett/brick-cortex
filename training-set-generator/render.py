@@ -46,7 +46,7 @@ for fname in os.listdir('/opt/ldraw/parts'):
                     color_opt = "-c{}".format(color)
                     cg_opt = "-cg{},{},{}".format(lat, lon, radius)
                     subprocess.call(['l3p', '-bWhite', '-q4', color_opt, lights_include_opt, cg_opt, '-o', fname, pov_fname])
-                    subprocess.call(['povray', '+H480', '+W640', '+A', '+Q9', pov_fname, out_fname_opt])
+                    subprocess.call(['povray', '+H480', '+W640', '+A', '+Q9', '-GA', pov_fname, out_fname_opt])
                     subprocess.call(['rm', pov_fname])
             
 
