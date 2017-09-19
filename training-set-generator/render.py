@@ -51,8 +51,8 @@ for part_row in part_rows:
             for lon in lons:
                 if lon == 180:
                     lon = 181  # silly bug?
-                pov_fname = "{}_{}_{}.pov".format(f_base, lat, lon)
-                out_fname = "{}_{}_{}.png".format(f_base, lat, lon)
+                pov_fname = "{}_{}_{}.pov".format(part, lat, lon)
+                out_fname = "{}_{}_{}.png".format(part, lat, lon)
                 out_fname_opt = "+O{}".format(out_fname)
                 color_opt = "-c{}".format(color)
                 cg_opt = "-cg{},{},{}".format(lat, lon, radius)
