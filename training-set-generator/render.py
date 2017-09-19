@@ -5,7 +5,7 @@ import subprocess
 import numpy
 import sqlite3
 from pathlib import Path
-
+import shutil
 
 
 conn = sqlite3.connect('/app/inventory.db')
@@ -46,11 +46,10 @@ for row in c.execute("select id, name, rgb, is_trans from colors"):
 
 
 os.chdir('/data')
-if not Path('/data','img').exists():
-    os.makedirs('/data/img')
-subprocess.call(['rm', '-rf', '/data/img/*'])
+if Path('img').exists():
+    shutil.rmtree('/data/img')
+os.mkdir('img')
 os.chdir('/data/img')
-
 
 # go through inventory and only generate images that are valid part/color combinations
 c.execute("select part_num from parts")
@@ -59,7 +58,7 @@ for part_row in part_rows:
     os.chdir('/data/img')
     part = part_row[0]
     # check if the part is in the ldraw library
-    part_file = Path("/opt/ldraw/parts",part).with_suffix('.dat')
+    part_file = Path("/opt/ldraw/parts", part).with_suffix('.dat')
     if not part_file.is_file():
         #something is wrong. resolve re-named parts somehow?
         print("OOPS - part {} could not be found!".format(part))
@@ -91,7 +90,10 @@ for part_row in part_rows:
                 subprocess.call(
                     ['l3p', background_opt, '-q4', color_opt, lights_include_opt, cg_opt, '-bu', '-o', fname, pov_fname], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                 subprocess.call(['povray', height_opt, width_opt, '+A', '+Q9', '-GA', pov_fname, out_fname_opt], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                os.remove(pov_fname)
+                try:
+                    os.remove(pov_fname)
+                except:
+                    print("couldn't remove {}".format(pov_fname))
 
 
             
