@@ -21,6 +21,7 @@ RUN pip3 install numpy
 WORKDIR /app
 COPY render.py render.py
 COPY lights.pov lights.pov
+COPY inventory.db inventory.db
 COPY povray.conf /usr/local/etc/povray/3.6/povray.conf
 
 WORKDIR /data

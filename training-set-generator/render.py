@@ -2,6 +2,12 @@ import os
 import re
 import subprocess
 import numpy
+import sqlite3
+
+conn = sqlite3.connect('inventory.db')
+c = conn.cursor()
+
+
 
 datafile_re = re.compile('\.dat', re.IGNORECASE)
 
@@ -26,28 +32,36 @@ subprocess.call(['rm', '-rf', '/data/*'])
 subprocess.call(['mkdir', 'img'])
 os.chdir('/data/img')
 
-for fname in os.listdir('/opt/ldraw/parts'):
-    f_base, ext = os.path.splitext(fname)
-    if datafile_re.search(ext):
-        # this is a data file
-        os.chdir('/data/img')
-        subprocess.call(['mkdir', f_base])
-        for color in colors:
-            os.chdir("/data/img/{}".format(f_base))
-            subprocess.call(['mkdir', "{}".format(color)])
-            os.chdir("/data/img/{}/{}".format(f_base, color))
-            for lat in lats:
-                for lon in lons:
-                    if lon == 180:
-                        lon = 181 # silly bug?
-                    pov_fname = "{}_{}_{}.pov".format(f_base, lat, lon)
-                    out_fname = "{}_{}_{}.png".format(f_base, lat, lon)
-                    out_fname_opt = "+O{}".format(out_fname)
-                    color_opt = "-c{}".format(color)
-                    cg_opt = "-cg{},{},{}".format(lat, lon, radius)
-                    subprocess.call(['l3p', '-bWhite', '-q4', color_opt, lights_include_opt, cg_opt, '-o', fname, pov_fname])
-                    subprocess.call(['povray', '+H480', '+W640', '+A', '+Q9', '-GA', pov_fname, out_fname_opt])
-                    subprocess.call(['rm', pov_fname])
+
+# go through inventory and only generate images that are valid part/color combinations
+c.execute("select part_num from parts")
+part_rows = c.fetchall()
+for part_row in part_rows:
+    os.chdir('/data/img')
+    part = part_row[0]
+    subprocess.call(['mkdir', part])
+    for color_row in c.execute("select distinct(color_id) from inventory_parts where part_num=:part", {"part": part}):
+        color = color_row[0]
+        os.chdir("/data/img/{}".format(part))
+        subprocess.call(['mkdir', "{}".format(color)])
+        os.chdir("/data/img/{}/{}".format(part, color))
+        print("rendering -- part: {} -> color: {}".format(part, color))
+        fname = "{}.dat".format(part)
+        for lat in lats:
+            for lon in lons:
+                if lon == 180:
+                    lon = 181  # silly bug?
+                pov_fname = "{}_{}_{}.pov".format(f_base, lat, lon)
+                out_fname = "{}_{}_{}.png".format(f_base, lat, lon)
+                out_fname_opt = "+O{}".format(out_fname)
+                color_opt = "-c{}".format(color)
+                cg_opt = "-cg{},{},{}".format(lat, lon, radius)
+                subprocess.call(
+                    ['l3p', '-bWhite', '-q4', color_opt, lights_include_opt, cg_opt, '-o', fname, pov_fname])
+                subprocess.call(['povray', '+H480', '+W640', '+A', '+Q9', '-GA', pov_fname, out_fname_opt])
+                subprocess.call(['rm', pov_fname])
+
+
             
 
 
@@ -59,4 +73,4 @@ for fname in os.listdir('/opt/ldraw/parts'):
 
 # l3p -bWhite -q4 -c4 -cg10,45,-50 -o 27c.dat pov/ && cd pov && povray +H480 +W640 +A +Q9 *.pov
 
-        # l3p -bWhite -q4 -c4 -cg50,45,-50 -o 3755.dat && povray +H480 +W640 +A +Q9 3755.pov
+        # l3p -bWhite -q4 -c4 -cg50,45,-50 -o 3755.dat && povray +H480 +W640 +A +Q9 -GA 3755.pov
