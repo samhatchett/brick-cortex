@@ -42,6 +42,8 @@ for part_row in part_rows:
     subprocess.call(['mkdir', part])
     for color_row in c.execute("select distinct(color_id) from inventory_parts where part_num=:part", {"part": part}):
         color = color_row[0]
+        if color == 9999:
+            continue
         os.chdir("/data/img/{}".format(part))
         subprocess.call(['mkdir', "{}".format(color)])
         os.chdir("/data/img/{}/{}".format(part, color))
@@ -57,7 +59,7 @@ for part_row in part_rows:
                 color_opt = "-c{}".format(color)
                 cg_opt = "-cg{},{},{}".format(lat, lon, radius)
                 subprocess.call(
-                    ['l3p', '-bWhite', '-q4', color_opt, lights_include_opt, cg_opt, '-o', fname, pov_fname])
+                    ['l3p', '-bWhite', '-q4', color_opt, lights_include_opt, cg_opt, '-bu', '-o', fname, pov_fname])
                 subprocess.call(['povray', '+H480', '+W640', '+A', '+Q9', '-GA', pov_fname, out_fname_opt])
                 subprocess.call(['rm', pov_fname])
 
