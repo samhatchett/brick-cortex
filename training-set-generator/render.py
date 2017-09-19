@@ -1,4 +1,5 @@
 import os
+import sys
 import re
 import subprocess
 import numpy
@@ -34,13 +35,15 @@ lons = numpy.arange(-180, 170, 45)
 # get color lookups - we will use the hex values allowed by l3p
 color_lookup = {} # key: integer, value: hex color
 prefix = "0x02"
+is_trans = False
 for row in c.execute("select id, name, rgb, is_trans from colors"):
-    if row[3] is 't':
+    if row[3] == 't':
         # transparent
         prefix = "0x03"
+        is_trans = True
     hex_color = row[2]
     color_id = row[0]
-    color_lookup[color_id] = {'hex': "{}{}".format(prefix, hex_color), 'name': row[1]}
+    color_lookup[color_id] = {'hex': "{}{}".format(prefix, hex_color), 'name': row[1], 'transparent': is_trans}
 
 
 os.chdir('/data')
@@ -61,19 +64,21 @@ for part_row in part_rows:
     if not part_file.is_file():
         #something is wrong. resolve re-named parts somehow?
         print("OOPS - part {} could not be found!".format(part))
-        continue;
+        continue
     
-    subprocess.call(['mkdir', part])
+    os.mkdir(part)
     for color_row in c.execute("select distinct(color_id) from inventory_parts where part_num=:part", {"part": part}):
         color = color_row[0]
         # get hex value of color:
         color_hex = color_lookup[color]['hex']
         color_name = color_lookup[color]['name']
+        trans = color_lookup[color]['transparent']
         color_name.replace(" ", "_")
         os.chdir("/data/img/{}".format(part))
-        subprocess.call(['mkdir', "{}".format(color_name)])
+        os.mkdir(color_name)
         os.chdir("/data/img/{}/{}".format(part, color_name))
-        print("rendering -- part: {} -> color: {}".format(part, color_name))
+        print("rendering -- part: {} -> color: {} ({})".format(part, color_name, "Transparent" if trans else "Opaque"))
+        sys.stdout.flush()
         fname = "{}.dat".format(part)
         for lat in lats:
             for lon in lons:
