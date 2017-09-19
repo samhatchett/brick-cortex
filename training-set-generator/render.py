@@ -4,7 +4,7 @@ import subprocess
 import numpy
 import sqlite3
 
-conn = sqlite3.connect('inventory.db')
+conn = sqlite3.connect('/app/inventory.db')
 c = conn.cursor()
 
 
