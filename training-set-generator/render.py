@@ -16,7 +16,7 @@ lights_include_opt = "-il/app/lights.pov"
 radius = -50
 lats = [-70,-50,-30,30,50,70]
 #lats = numpy.arange(-70, 70, 20)
-lons = numpy.arange(0, 350, 20)
+lons = numpy.arange(0, 350, 45)
 
 # debug stuff
 #lats = [45]
