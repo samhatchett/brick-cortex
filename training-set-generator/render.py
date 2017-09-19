@@ -31,12 +31,11 @@ lons = numpy.arange(-180, 170, 45)
 #lons = [90]
 
 
-
 # get color lookups - we will use the hex values allowed by l3p
 color_lookup = {} # key: integer, value: hex color
-prefix = "0x02"
-is_trans = False
 for row in c.execute("select id, name, rgb, is_trans from colors"):
+    prefix = "0x02"
+    is_trans = False
     if row[3] == 't':
         # transparent
         prefix = "0x03"
