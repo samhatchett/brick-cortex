@@ -55,7 +55,7 @@ else:
 os.chdir('/data/img')
 
 # go through inventory and only generate images that are valid part/color combinations
-c.execute("select part_num, name from parts")
+c.execute("select part_num, name from parts where part_cat_id not in (13,17,27,57)")
 part_rows = c.fetchall()
 
 # track how far we've gone
