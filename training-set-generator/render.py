@@ -80,8 +80,9 @@ for part_row in part_rows:
         #something is wrong. resolve re-named parts somehow?
         print("OOPS - part {} could not be found!".format(part))
         continue
-    
-    os.mkdir(part_name_path)
+
+    if not Path(part_name_path).exists:
+        os.mkdir(part_name_path)
     for color_row in c.execute("select distinct(color_id) from inventory_parts where part_num=:part", {"part": part}):
         color = color_row[0]
         # get hex value of color:
@@ -90,7 +91,8 @@ for part_row in part_rows:
         trans = color_lookup[color]['transparent']
         color_name.replace(" ", "_")
         os.chdir("/data/img/{}".format(part_name_path))
-        os.mkdir(color_name)
+        if not Path(color_name).exists:
+            os.mkdir(color_name)
         os.chdir("/data/img/{}/{}".format(part_name_path, color_name))
         print("rendering -- part: {} -> color: {} ({})".format(part_name_path, color_name, "Transparent" if trans else "Opaque"))
         sys.stdout.flush()
