@@ -81,8 +81,8 @@ for part_row in part_rows:
         print("OOPS - part {} could not be found!".format(part))
         continue
 
-    if not Path(part_name_path).exists:
-        os.mkdir(part_name_path)
+    if not Path(part).exists:
+        os.mkdir(part)
     for color_row in c.execute("select distinct(color_id) from inventory_parts where part_num=:part", {"part": part}):
         color = color_row[0]
         # get hex value of color:
@@ -90,10 +90,10 @@ for part_row in part_rows:
         color_name = color_lookup[color]['name']
         trans = color_lookup[color]['transparent']
         color_name.replace(" ", "_")
-        os.chdir("/data/img/{}".format(part_name_path))
+        os.chdir("/data/img/{}".format(part))
         if not Path(color_name).exists:
             os.mkdir(color_name)
-        os.chdir("/data/img/{}/{}".format(part_name_path, color_name))
+        os.chdir("/data/img/{}/{}".format(part, color_name))
         print("rendering -- part: {} -> color: {} ({})".format(part_name_path, color_name, "Transparent" if trans else "Opaque"))
         sys.stdout.flush()
         fname = "{}.dat".format(part)
