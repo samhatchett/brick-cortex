@@ -73,6 +73,8 @@ for part_row in part_rows:
     part_name = part_row[1]
     # check if the part is in the ldraw library
     part_name_path = "{}-[{}]".format(part, part_name)
+    part_name_path.replace("/","-")
+    part_name_path.replace(" ","_")
     part_file = Path("/opt/ldraw/parts", part).with_suffix('.dat')
     if not part_file.is_file():
         #something is wrong. resolve re-named parts somehow?
