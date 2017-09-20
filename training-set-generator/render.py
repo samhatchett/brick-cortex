@@ -11,7 +11,7 @@ import shutil
 conn = sqlite3.connect('/app/inventory.db')
 c = conn.cursor()
 
-background_opt = "-b.9,.9,.9" # white background
+background_opt = "-b.9,.9,.9" # gray background
 lights_include_opt = "-il/app/lights.pov"
 height_opt = '+H480'
 width_opt = '+W640'
@@ -47,24 +47,39 @@ for row in c.execute("select id, name, rgb, is_trans from colors"):
 
 os.chdir('/data')
 if Path('img').exists():
-    shutil.rmtree('/data/img')
-os.mkdir('img')
+    #shutil.rmtree('/data/img')
+    print("dir exists")
+else:
+    os.mkdir('img')
+
 os.chdir('/data/img')
 
 # go through inventory and only generate images that are valid part/color combinations
-c.execute("select part_num from parts")
+c.execute("select part_num, name from parts")
 part_rows = c.fetchall()
+
+# track how far we've gone
+part_num = 0
+part_count = len(part_rows)
+
 for part_row in part_rows:
+    part_num += 1
+    pctDone = part_num / part_count
+    print("### PART {} OF {} ( {:.3f}% complete )".format(part_num, part_count, pctDone))
+    sys.stdout.flush()
+
     os.chdir('/data/img')
     part = part_row[0]
+    part_name = part_row[1]
     # check if the part is in the ldraw library
+    part_name_path = "{}-[{}]".format(part, part_name)
     part_file = Path("/opt/ldraw/parts", part).with_suffix('.dat')
     if not part_file.is_file():
         #something is wrong. resolve re-named parts somehow?
         print("OOPS - part {} could not be found!".format(part))
         continue
     
-    os.mkdir(part)
+    os.mkdir(part_name_path)
     for color_row in c.execute("select distinct(color_id) from inventory_parts where part_num=:part", {"part": part}):
         color = color_row[0]
         # get hex value of color:
@@ -72,10 +87,10 @@ for part_row in part_rows:
         color_name = color_lookup[color]['name']
         trans = color_lookup[color]['transparent']
         color_name.replace(" ", "_")
-        os.chdir("/data/img/{}".format(part))
+        os.chdir("/data/img/{}".format(part_name_path))
         os.mkdir(color_name)
-        os.chdir("/data/img/{}/{}".format(part, color_name))
-        print("rendering -- part: {} -> color: {} ({})".format(part, color_name, "Transparent" if trans else "Opaque"))
+        os.chdir("/data/img/{}/{}".format(part_name_path, color_name))
+        print("rendering -- part: {} -> color: {} ({})".format(part_name_path, color_name, "Transparent" if trans else "Opaque"))
         sys.stdout.flush()
         fname = "{}.dat".format(part)
         for lat in lats:
@@ -87,9 +102,14 @@ for part_row in part_rows:
                 out_fname_opt = "+O{}".format(out_fname)
                 color_opt = "-c{}".format(color_hex)
                 cg_opt = "-cg{},{},{}".format(lat, lon, radius)
-                subprocess.call(
-                    ['l3p', background_opt, '-q4', color_opt, lights_include_opt, cg_opt, '-bu', '-o', fname, pov_fname], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                subprocess.call(['povray', height_opt, width_opt, '+A', '+Q9', '-GA', pov_fname, out_fname_opt], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                # does the output file already exist?
+                if Path(out_fname).exists():
+                    print("{} exists. skipping.".format(out_fname))
+                    continue
+                l3p_cmd = ['l3p', background_opt, '-q4', color_opt, lights_include_opt, cg_opt, '-bu', '-o', fname, pov_fname]
+                pov_cmd = ['povray', height_opt, width_opt, '+A', '+Q9', '-GA', pov_fname, out_fname_opt]
+                subprocess.call(l3p_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                subprocess.call(pov_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                 try:
                     os.remove(pov_fname)
                 except:
