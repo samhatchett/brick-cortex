@@ -18,7 +18,7 @@ height_opt = '+H480'
 width_opt = '+W640'
 
 
-datafile_re = re.compile('\.dat', re.IGNORECASE)
+povfile_re = re.compile('\.pov', re.IGNORECASE)
 
 
 
@@ -121,18 +121,62 @@ for p_row in part_rows:
             l3p_cmd = ['l3p', background_opt, '-q4', color_opt, lights_include_opt, cg_opt, '-bu', '-o', fname, pov_fname]
             pov_cmd = ['povray', height_opt, width_opt, '+A', '+Q9', '-GA', pov_fname, out_fname_opt]
             subprocess.call(l3p_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            subprocess.call(pov_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            try:
-                os.remove(pov_fname)
-            except:
-                print("couldn't remove {}".format(pov_fname))
-
-
-            
+            #subprocess.call(pov_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            #try:
+            #    os.remove(pov_fname)
+            #except:
+            #    print("couldn't remove {}".format(pov_fname))
 
 
 
 
+
+# all done with the l3p generation.
+# now start on processing bathces of POV-ray files
+import threading
+import time
+
+max_cpu = 4
+processing = 0
+
+def call_batch(command):
+    global processing
+    print("running POV-ray:")
+    print(command)
+    process = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    process.wait()
+    processing -= 1
+
+
+os.chdir('/data')
+if Path('ren').exists():
+    print("dir ren exists")
+else:
+    os.mkdir('ren')
+
+os.chdir('/data/ren')
+for root, dirs, files in os.walk('/data/img'):
+    for f in files:
+        file = os.path.join(root, f)
+        filename, file_extension = os.path.splitext(f)
+        ext = file_extension[1:]
+        if ext == 'pov':
+            while processing > max_cpu:
+                time.sleep(1)
+            print("looking at file: {}".format(file))
+            pov_fname = file
+            rendered_root = root.replace("/img/", "/ren/")
+            out_fname = str(Path(rendered_root, filename).with_suffix('.png'))
+            out_fname_opt = "+O{}".format(out_fname)
+            os.makedirs(rendered_root,exist_ok=True)
+            pov_cmd = ['povray', height_opt, width_opt, '+A', '+Q9', '-GA', pov_fname, out_fname_opt]
+            if Path(out_fname).exists():
+                print("{} exists. skipping.".format(out_fname))
+            else:
+                t = threading.Thread(target=call_batch, args=(pov_cmd,))
+                t.daemon = True
+                t.start()
+                processing += 1
 
 
 
