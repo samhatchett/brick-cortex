@@ -80,8 +80,6 @@ for p_row in part_rows:
     sys.stdout.flush()
 
     os.chdir('/data/img')
-    part = part_row[0]
-    part_name = part_row[1].encode('utf-8', 'ignore')
     # check if the part is in the ldraw library
     part_name_path = "{}-[{}]".format(part, part_name)
     part_name_path = part_name_path.replace("/","-")
