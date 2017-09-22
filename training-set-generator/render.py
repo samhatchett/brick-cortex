@@ -19,7 +19,7 @@ def call_batch(command):
     global processing
     processing += 1
     #print("running command: {}".format(command))
-    print(command)
+    #print(command)
     process = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     process.wait()
     processing -= 1
