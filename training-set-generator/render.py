@@ -12,6 +12,7 @@ import time
 
 max_cpu = 4
 processing = 0
+multi_l3p = False;
 
 ###########################################
 #### batch multicore command-line processing
@@ -130,12 +131,15 @@ for p_row in part_rows:
                 print("{} exists. skipping.".format(pov_f_path))
                 continue
             l3p_cmd = ['l3p', background_opt, '-q4', color_opt, lights_include_opt, cg_opt, '-bu', '-o', fname, str(pov_f_path)]
-            while processing > max_cpu:
-                time.sleep(1)
-            t = threading.Thread(target=call_batch, args=(l3p_cmd,))
-            t.daemon = True
-            t.start()
-            
+            if multi_l3p:
+                while processing > max_cpu:
+                    time.sleep(1)
+                t = threading.Thread(target=call_batch, args=(l3p_cmd,))
+                t.daemon = True
+                t.start()
+            else:
+                # no-multi
+                subprocess.run(l3p_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 
 
