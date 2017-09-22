@@ -25,7 +25,6 @@ COPY inventory.db inventory.db
 COPY povray.conf /usr/local/etc/povray/3.6/povray.conf
 
 WORKDIR /data
-RUN mkdir /data/img
 VOLUME /data
 
 CMD python3 /app/render.py
