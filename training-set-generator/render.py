@@ -115,7 +115,7 @@ for p_row in part_rows:
     color_name.replace(" ", "_")
     colored_path = part_name_path / color_name
     colored_path.mkdir(parents=True,exist_ok=True)
-    print("rendering -- part#{}: {} -> color: {} ({})".format(part, part_name, color_name, "Transparent" if trans else "Opaque"))
+    print("rendering -- part#{}: {} -> color: {} ({})".format(part, extended_part_name, color_name, "Transparent" if trans else "Opaque"))
     sys.stdout.flush()
     fname = "{}.dat".format(part)
     for lat in lats:
